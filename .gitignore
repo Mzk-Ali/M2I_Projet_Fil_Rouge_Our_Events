@@ -1,0 +1,64 @@
+# =================
+# Symfony / PHP
+# =================
+
+###> symfony/framework-bundle ###
+/sf_our_events_api/.env.local
+/sf_our_events_api/.env.local.php
+/sf_our_events_api/.env.*.local
+/sf_our_events_api/config/secrets/prod/prod.decrypt.private.php
+/sf_our_events_api/public/bundles/
+/sf_our_events_api/var/
+/sf_our_events_api/vendor/
+###< symfony/framework-bundle ###
+
+
+# =================
+# Next.js / Node
+# =================
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/next_our_events_front/node_modules
+/next_our_events_front/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/next_our_events_front/coverage
+
+# next.js
+/next_our_events_front/.next/
+/next_our_events_front/out/
+
+# production
+/next_our_events_front/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+/next_our_events_front/.env*
+/next_our_events_front/.env.local
+
+# vercel
+/next_our_events_front/.vercel
+
+# typescript
+*.tsbuildinfo
+/next_our_events_front/next-env.d.ts
+
+
+
