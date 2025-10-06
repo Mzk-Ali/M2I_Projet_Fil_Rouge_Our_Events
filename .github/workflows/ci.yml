@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [ dev ]
+    paths:
+      - 'sf_our_events_api/**'
+      - 'next_our_events_front/**'
+  pull_request:
+    paths:
+      - 'sf_our_events_api/**'
+      - 'next_our_events_front/**'
+
+jobs:
+  # --------------------
+  # 🧱 Job 1 : Symfony API
+  # --------------------
+  api:
+    name: "API (Symfony)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sf_our_events_api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql
+          coverage: xdebug
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction
+
+      - name: Run Symfony tests
+        run: |
+          php bin/console doctrine:database:create --env=test
+          php bin/console doctrine:schema:create --env=test
+          php bin/phpunit --testdox
+
+  # --------------------
+  # 🎨 Job 2 : Next.js front
+  # --------------------
+  front:
+    name: "Front (Next.js)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: next_our_events_front
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build Next.js app
+        run: npm run build
