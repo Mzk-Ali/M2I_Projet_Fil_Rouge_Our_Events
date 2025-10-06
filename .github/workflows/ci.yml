@@ -7,13 +7,14 @@ on:
       - 'sf_our_events_api/**'
       - 'next_our_events_front/**'
   pull_request:
+    branches: [ dev ]
     paths:
       - 'sf_our_events_api/**'
       - 'next_our_events_front/**'
 
 jobs:
   # --------------------
-  # 🧱 Job 1 : Symfony API
+  #  Job 1 : Symfony API
   # --------------------
   api:
     name: "API (Symfony)"
@@ -41,7 +42,7 @@ jobs:
         run: php bin/phpunit --testdox
 
   # --------------------
-  # 🎨 Job 2 : Next.js front
+  #  Job 2 : Next.js front
   # --------------------
   front:
     name: "Front (Next.js)"
