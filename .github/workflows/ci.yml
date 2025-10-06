@@ -38,10 +38,7 @@ jobs:
         run: composer install --no-progress --prefer-dist --no-interaction
 
       - name: Run Symfony tests
-        run: |
-          php bin/console doctrine:database:create --env=test
-          php bin/console doctrine:schema:create --env=test
-          php bin/phpunit --testdox
+        run: php bin/phpunit --testdox
 
   # --------------------
   # 🎨 Job 2 : Next.js front
