@@ -1,12 +1,12 @@
-name: CD
+# name: CD
 
-on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'sf_our_events_api/**'
-      - 'next_our_events_front/**'
-  pull_request:
-    paths:
-      - 'sf_our_events_api/**'
-      - 'next_our_events_front/**'
+# on:
+#   push:
+#     branches: [ main ]
+#     paths:
+#       - 'sf_our_events_api/**'
+#       - 'next_our_events_front/**'
+#   pull_request:
+#     paths:
+#       - 'sf_our_events_api/**'
+#       - 'next_our_events_front/**'
