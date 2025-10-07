@@ -1,0 +1,128 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\EventRepository;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
+#[ORM\Entity(repositoryClass: EventRepository::class)]
+class Event
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre de l'événement est obligatoire")]
+    #[Assert\Length(min:2, max: 255, minMessage: "Le titre de l'événement doit faire au moins {{ limit }} caractères", maxMessage: "Le titre de l'événement ne peut pas faire plus de {{ limit }} caractères")]
+    private ?string $title = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "L'url de l'image de l'évenement est obligatoire")]
+    #[Assert\Url(message: "L'URL de l'image n'est pas valide")]
+    private ?string $image_url = null;
+
+    #[ORM\Column]
+    #[Assert\NotBlank(message: "La capacité est obligatoire")]
+    #[Assert\Positive(message: "La capacité doit être un nombre positif")]
+    #[Assert\LessThanOrEqual(value: 10000, message: "La capacité ne peut pas dépasser {{ compared_value }} personnes")]
+    private ?int $capacity = null;
+
+    #[ORM\Column]
+    #[Assert\NotBlank(message: "La date de début de l'évenement est obligatoire")]
+    #[Assert\Type(\DateTimeInterface::class, message: "La date de début de l'évenement doit être une date valide")]
+    #[Assert\GreaterThan("today", message: "La date de début doit être dans le futur")]
+    private ?\DateTime $start_datetime = null;
+
+    #[ORM\Column]
+    #[Assert\NotBlank(message: "La date de fin de l'évenement est obligatoire")]
+    #[Assert\Type(\DateTimeInterface::class, message: "La date de fin de l'évenement doit être une date valide")]
+    #[Assert\Expression(
+        "this.getEndDatetime() > this.getStartDatetime()",
+        message: "La date de fin doit être postérieure à la date de début"
+    )]
+    private ?\DateTime $end_datetime = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(string $title): static
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->image_url;
+    }
+
+    public function setImageUrl(string $image_url): static
+    {
+        $this->image_url = $image_url;
+
+        return $this;
+    }
+
+    public function getCapacity(): ?int
+    {
+        return $this->capacity;
+    }
+
+    public function setCapacity(int $capacity): static
+    {
+        $this->capacity = $capacity;
+
+        return $this;
+    }
+
+    public function getStartDatetime(): ?\DateTime
+    {
+        return $this->start_datetime;
+    }
+
+    public function setStartDatetime(\DateTime $start_datetime): static
+    {
+        $this->start_datetime = $start_datetime;
+
+        return $this;
+    }
+
+    public function getEndDatetime(): ?\DateTime
+    {
+        return $this->end_datetime;
+    }
+
+    public function setEndDatetime(\DateTime $end_datetime): static
+    {
+        $this->end_datetime = $end_datetime;
+
+        return $this;
+    }
+}
