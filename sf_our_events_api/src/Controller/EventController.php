@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Event;
 use App\Repository\CategoryRepository;
 use App\Repository\EventRepository;
+use App\Repository\PremiseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -58,9 +59,10 @@ final class EventController extends AbstractController
      *     "title": "Concert Jazz Live",
      *     "description": "Un concert exceptionnel avec les meilleurs musiciens de jazz.",
      *     "image_url": "https://example.com/images/jazz.jpg",
-     *     "capacity": "150",
+     *     "capacity": 150,
      *     "start_datetime": "+10 days",
      *     "end_datetime": "+10 days +2 hours",
+     *     "premise": 2,
      *     'categories' => [35]
      * }
      *
@@ -68,15 +70,24 @@ final class EventController extends AbstractController
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $em
      * @param CategoryRepository $categoryRepository
+     * @param PremiseRepository $premiseRepository
      * @param UrlGeneratorInterface $urlGenerator
      * @return JsonResponse
      */
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour créer un Evenement')]
     #[Route('/api/events', name: 'api_create_event', methods: ['POST'])]
-    public function createEvent(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator, CategoryRepository $categoryRepository, UrlGeneratorInterface $urlGenerator): JsonResponse
+    public function createEvent(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator, CategoryRepository $categoryRepository, PremiseRepository $premiseRepository, UrlGeneratorInterface $urlGenerator): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $event = $serializer->deserialize($request->getContent(), Event::class, 'json', ['groups' => 'event:write', 'ignore_attributes' => ['categories']]);
+
+        $premiseId = $data["premiseId"];
+
+        $premise = $premiseRepository->find((int) $premiseId);
+
+        if (!$premise) {
+            return new JsonResponse(["error" => "Le lieu avec l'id $premiseId n'existe pas."], Response::HTTP_BAD_REQUEST);
+        }
 
         // Suppression des catégories fantômes ajoutés par le serializer
         $event->getCategories()->clear();
@@ -90,6 +101,8 @@ final class EventController extends AbstractController
                 }
             }
         }
+
+        $event->setPremise($premise);
 
         // On vérifie les erreurs
         $errors = $validator->validate($event);
@@ -115,9 +128,10 @@ final class EventController extends AbstractController
      *     "title": "Concert Jazz Live",
      *     "description": "Un concert exceptionnel avec les meilleurs musiciens de jazz.",
      *     "image_url": "https://example.com/images/jazz.jpg",
-     *     "capacity": "150",
+     *     "capacity": 150,
      *     "start_datetime": "+10 days",
      *     "end_datetime": "+10 days +2 hours",
+     *     "premise": 2,
      *     'categories' => [35]
      * }
      *
@@ -126,14 +140,24 @@ final class EventController extends AbstractController
      * @param Event $currentEvent
      * @param EntityManagerInterface $em
      * @param CategoryRepository $categoryRepository
+     * @param PremiseRepository $premiseRepository
      * @return JsonResponse
      */
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour modifier un Evenement')]
     #[Route('/api/events/{id}', name: 'api_update_event', methods: ['PUT'])]
-    public function updateEvent(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, Event $currentEvent, ValidatorInterface $validator, CategoryRepository $categoryRepository): JsonResponse
+    public function updateEvent(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, Event $currentEvent, ValidatorInterface $validator, CategoryRepository $categoryRepository, PremiseRepository $premiseRepository): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $updatedEvent = $serializer->deserialize($request->getContent(), Event::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $currentEvent]);
+
+        $premiseId = $data["premiseId"];
+
+        $premise = $premiseRepository->find((int) $premiseId);
+
+        if (!$premise) {
+            return new JsonResponse(["error" => "Le lieu avec l'id $premiseId n'existe pas."], Response::HTTP_BAD_REQUEST);
+        }
+
 
         // Suppression des catégories fantômes ajoutés par le serializer
         $updatedEvent->getCategories()->clear();
@@ -147,6 +171,8 @@ final class EventController extends AbstractController
                 }
             }
         }
+
+        $updatedEvent->setPremise($premise);
 
         // On vérifie les erreurs
         $errors = $validator->validate($updatedEvent);

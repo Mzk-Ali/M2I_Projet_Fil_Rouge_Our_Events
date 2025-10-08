@@ -53,6 +53,7 @@ class AppFixtures extends Fixture
 
 
         // Premises
+        $premises = [];
         $premisesData = [
             ["123 Rue de Paris", "Paris", "75001"],
             ["45 Avenue des Champs", "Lyon", "69000"],
@@ -67,6 +68,7 @@ class AppFixtures extends Fixture
             $premise->setCity($city);
             $premise->setPostalCode($postalCode);
             $manager->persist($premise);
+            $premises[] = $premise;
         }
 
 
@@ -110,7 +112,7 @@ class AppFixtures extends Fixture
             ],
         ];
 
-        foreach ($eventsData as $data) {
+        foreach ($eventsData as $index => $data) {
             $event = new Event();
             $event->setTitle($data['title']);
             $event->setDescription($data['description']);
@@ -118,6 +120,10 @@ class AppFixtures extends Fixture
             $event->setCapacity($data['capacity']);
             $event->setStartDatetime(new \DateTime($data['start']));
             $event->setEndDatetime(new \DateTime($data['end']));
+
+            // Ajout d'un Premise (distribue en boucle)
+            $premiseIndex = $index % count($premises); // pour ne pas dépasser le tableau
+            $event->setPremise($premises[$premiseIndex]);
 
             // Ajout des catégories
             foreach ($data['categories'] as $categoryName) {

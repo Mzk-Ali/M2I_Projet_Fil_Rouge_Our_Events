@@ -67,6 +67,11 @@ class Event
     #[Groups(['event:read', 'event:write'])]
     private Collection $categories;
 
+    #[ORM\ManyToOne(inversedBy: 'events')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['event:read', 'event:write'])]
+    private ?Premise $premise = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -169,6 +174,18 @@ class Event
     public function removeCategory(Category $category): static
     {
         $this->categories->removeElement($category);
+
+        return $this;
+    }
+
+    public function getPremise(): ?Premise
+    {
+        return $this->premise;
+    }
+
+    public function setPremise(?Premise $premise): static
+    {
+        $this->premise = $premise;
 
         return $this;
     }
