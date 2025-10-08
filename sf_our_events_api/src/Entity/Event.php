@@ -72,6 +72,10 @@ class Event
     #[Groups(['event:read', 'event:write'])]
     private ?Premise $premise = null;
 
+    #[ORM\ManyToOne(inversedBy: 'events')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $manager = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -186,6 +190,18 @@ class Event
     public function setPremise(?Premise $premise): static
     {
         $this->premise = $premise;
+
+        return $this;
+    }
+
+    public function getManager(): ?User
+    {
+        return $this->manager;
+    }
+
+    public function setManager(?User $manager): static
+    {
+        $this->manager = $manager;
 
         return $this;
     }

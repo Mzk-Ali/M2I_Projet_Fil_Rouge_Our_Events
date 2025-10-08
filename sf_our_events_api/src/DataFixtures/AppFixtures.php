@@ -125,6 +125,8 @@ class AppFixtures extends Fixture
             $premiseIndex = $index % count($premises); // pour ne pas dépasser le tableau
             $event->setPremise($premises[$premiseIndex]);
 
+            $event->setManager($userAdmin);
+
             // Ajout des catégories
             foreach ($data['categories'] as $categoryName) {
                 foreach ($categories as $category) {

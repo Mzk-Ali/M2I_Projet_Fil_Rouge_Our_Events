@@ -62,8 +62,8 @@ final class EventController extends AbstractController
      *     "capacity": 150,
      *     "start_datetime": "+10 days",
      *     "end_datetime": "+10 days +2 hours",
-     *     "premise": 2,
-     *     'categories' => [35]
+     *     "premiseId": 2,
+     *     "categories": [35]
      * }
      *
      * @param Request $request
@@ -85,6 +85,8 @@ final class EventController extends AbstractController
 
         $premise = $premiseRepository->find((int) $premiseId);
 
+        $manager = $this->getUser();
+
         if (!$premise) {
             return new JsonResponse(["error" => "Le lieu avec l'id $premiseId n'existe pas."], Response::HTTP_BAD_REQUEST);
         }
@@ -103,6 +105,7 @@ final class EventController extends AbstractController
         }
 
         $event->setPremise($premise);
+        $event->setManager($manager);
 
         // On vérifie les erreurs
         $errors = $validator->validate($event);
@@ -131,8 +134,8 @@ final class EventController extends AbstractController
      *     "capacity": 150,
      *     "start_datetime": "+10 days",
      *     "end_datetime": "+10 days +2 hours",
-     *     "premise": 2,
-     *     'categories' => [35]
+     *     "premiseId": 2,
+     *     "categories" : [35]
      * }
      *
      * @param Request $request
