@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Event;
+use App\Repository\CategoryRepository;
 use App\Repository\EventRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,8 +42,10 @@ final class EventController extends AbstractController
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
 
-        $eventList = $eventRepository->findAllWithPagination($page, $limit);
-        $jsonEventList = $serializer->serialize($eventList, 'json');
+        $result = $eventRepository->findAllWithPagination($page, $limit);
+        $events = $result['data'];
+        // $total  = $result['total'];
+        $jsonEventList = $serializer->serialize($events , 'json', ['groups' => 'event:read']);
 
         return new JsonResponse($jsonEventList, Response::HTTP_OK, [], true);
     }
@@ -52,25 +55,41 @@ final class EventController extends AbstractController
      * Cette méthode permet d'insérer un nouveau évenement .
      * Exemple de données :
      * {
-     *     "title": "",
-     *     "description": "",
-     *     "image_url": "",
-     *     "capacity": "",
-     *     "start_datetime": "",
-     *     "end_datetime": ""
+     *     "title": "Concert Jazz Live",
+     *     "description": "Un concert exceptionnel avec les meilleurs musiciens de jazz.",
+     *     "image_url": "https://example.com/images/jazz.jpg",
+     *     "capacity": "150",
+     *     "start_datetime": "+10 days",
+     *     "end_datetime": "+10 days +2 hours",
+     *     'categories' => [35]
      * }
      *
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $em
+     * @param CategoryRepository $categoryRepository
      * @param UrlGeneratorInterface $urlGenerator
      * @return JsonResponse
      */
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour créer un Evenement')]
     #[Route('/api/events', name: 'api_create_event', methods: ['POST'])]
-    public function createEvent(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator, UrlGeneratorInterface $urlGenerator): JsonResponse
+    public function createEvent(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator, CategoryRepository $categoryRepository, UrlGeneratorInterface $urlGenerator): JsonResponse
     {
-        $event = $serializer->deserialize($request->getContent(), Event::class, 'json');
+        $data = json_decode($request->getContent(), true);
+        $event = $serializer->deserialize($request->getContent(), Event::class, 'json', ['groups' => 'event:write', 'ignore_attributes' => ['categories']]);
+
+        // Suppression des catégories fantômes ajoutés par le serializer
+        $event->getCategories()->clear();
+
+        // Gestion des catégories via leurs IDs
+        if (!empty($data['categories']) && is_array($data['categories'])) {
+            foreach ($data['categories'] as $categoryId) {
+                $category = $categoryRepository->find((int) $categoryId);
+                if ($category) {
+                    $event->addCategory($category);
+                }
+            }
+        }
 
         // On vérifie les erreurs
         $errors = $validator->validate($event);
@@ -82,7 +101,7 @@ final class EventController extends AbstractController
         $em->persist($event);
         $em->flush();
 
-        $jsonEvent = $serializer->serialize($event, 'json');
+        $jsonEvent = $serializer->serialize($event, 'json', ['groups' => 'event:read']);
 
         return new JsonResponse($jsonEvent, Response::HTTP_CREATED, [], true);
     }
@@ -93,25 +112,41 @@ final class EventController extends AbstractController
      *
      * Exemple de données :
      * {
-     *     "title": "",
-     *     "description": "",
-     *     "image_url": "",
-     *     "capacity": "",
-     *     "start_datetime": "",
-     *     "end_datetime": ""
+     *     "title": "Concert Jazz Live",
+     *     "description": "Un concert exceptionnel avec les meilleurs musiciens de jazz.",
+     *     "image_url": "https://example.com/images/jazz.jpg",
+     *     "capacity": "150",
+     *     "start_datetime": "+10 days",
+     *     "end_datetime": "+10 days +2 hours",
+     *     'categories' => [35]
      * }
      *
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param Event $currentEvent
      * @param EntityManagerInterface $em
+     * @param CategoryRepository $categoryRepository
      * @return JsonResponse
      */
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour modifier un Evenement')]
     #[Route('/api/events/{id}', name: 'api_update_event', methods: ['PUT'])]
-    public function updateEvent(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, Event $currentEvent, ValidatorInterface $validator): JsonResponse
+    public function updateEvent(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, Event $currentEvent, ValidatorInterface $validator, CategoryRepository $categoryRepository): JsonResponse
     {
+        $data = json_decode($request->getContent(), true);
         $updatedEvent = $serializer->deserialize($request->getContent(), Event::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $currentEvent]);
+
+        // Suppression des catégories fantômes ajoutés par le serializer
+        $updatedEvent->getCategories()->clear();
+
+        // Gestion des catégories via leurs IDs
+        if (!empty($data['categories']) && is_array($data['categories'])) {
+            foreach ($data['categories'] as $categoryId) {
+                $category = $categoryRepository->find((int) $categoryId);
+                if ($category) {
+                    $updatedEvent->addCategory($category);
+                }
+            }
+        }
 
         // On vérifie les erreurs
         $errors = $validator->validate($updatedEvent);
@@ -138,6 +173,10 @@ final class EventController extends AbstractController
     #[Route('/api/events/{id}', name: 'api_delete_event', methods: ['DELETE'])]
     public function deleteEvent(Event $event, EntityManagerInterface $em): JsonResponse
     {
+        // Suppression des liens avec les catégories de cette évenement
+        foreach ($event->getCategories() as $category) {
+            $event->removeCategory($category);
+        }
         $em->remove($event);
         $em->flush();
 

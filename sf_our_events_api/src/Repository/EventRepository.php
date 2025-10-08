@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Event;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,12 +17,40 @@ class EventRepository extends ServiceEntityRepository
         parent::__construct($registry, Event::class);
     }
 
-    public function findAllWithPagination($page, $limit)
+    public function findAllWithPagination(int $page = 1, int $limit = 3): array
     {
-        $qb = $this->createQueryBuilder('b')
-            ->setFirstResult(($page - 1) * $limit)
+        $firstResult = max(0, ($page - 1) * $limit);
+
+        $qb = $this->createQueryBuilder('e')
+            ->leftJoin('e.categories', 'c')
+            ->addSelect('c')
+            ->orderBy('e.id', 'ASC');
+
+        $query = $qb->getQuery()
+            ->setFirstResult($firstResult)
             ->setMaxResults($limit);
-        return $qb->getQuery()->getResult();
+
+        $paginator = new Paginator($query, true);
+
+        // Optionnel : forcer les output walkers si tu utilises DISTINCT / HAVING complexe
+        // $paginator->setUseOutputWalkers(true);
+
+        // Récupère les entités paginées
+        $events = iterator_to_array($paginator);
+
+        // total (count du paginator)
+        $total = count($paginator);
+
+        return [
+            'data'  => $events,
+            'total' => $total,
+        ];
+        // $qb = $this->createQueryBuilder('e')
+        //     ->leftJoin('e.categories', 'c')
+        //     ->addSelect('c')
+        //     ->setFirstResult(($page - 1) * $limit)
+        //     ->setMaxResults($limit);
+        // return $qb->getQuery()->getResult();
     }
 
     //    /**

@@ -16,10 +16,7 @@ RUN apt-get update && \
         opcache \
         pdo \
         pdo_mysql \
-    && pecl install apcu \
-    && docker-php-ext-enable apcu \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
+    && if php -m | grep -qi xdebug; then docker-php-ext-enable xdebug; fi \
     && rm -rf /var/lib/apt/lists/*
 
 COPY php.ini /usr/local/etc/php/php.ini

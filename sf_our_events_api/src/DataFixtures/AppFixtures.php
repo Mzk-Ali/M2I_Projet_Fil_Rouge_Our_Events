@@ -41,22 +41,14 @@ class AppFixtures extends Fixture
         $manager->persist($userAdmin);
 
 
-        // Categories
-        $categories = [
-            "Musique",
-            "Sport",
-            "Technologie",
-            "Art",
-            "Cuisine",
-            "Voyage",
-            "Santé",
-            "Education"
-        ];
-
-        foreach ($categories as $categoryName) {
+        // Création des catégories
+        $categories = [];
+        $categoryNames = ["Musique", "Sport", "Technologie", "Art", "Cuisine", "Voyage", "Santé", "Education"];
+        foreach ($categoryNames as $name) {
             $category = new Category();
-            $category->setName($categoryName);
+            $category->setName($name);
             $manager->persist($category);
+            $categories[] = $category;
         }
 
 
@@ -86,7 +78,8 @@ class AppFixtures extends Fixture
                 'image' => 'https://example.com/images/jazz.jpg',
                 'capacity' => 150,
                 'start' => '+10 days',
-                'end' => '+10 days +2 hours'
+                'end' => '+10 days +2 hours',
+                'categories' => ['Musique']
             ],
             [
                 'title' => 'Hackathon Tech 2025',
@@ -94,7 +87,8 @@ class AppFixtures extends Fixture
                 'image' => 'https://example.com/images/hackathon.jpg',
                 'capacity' => 300,
                 'start' => '+15 days',
-                'end' => '+17 days'
+                'end' => '+17 days',
+                'categories' => ['Technologie', 'Education']
             ],
             [
                 'title' => "Exposition d'Art Moderne",
@@ -102,7 +96,8 @@ class AppFixtures extends Fixture
                 'image' => 'https://example.com/images/art.jpg',
                 'capacity' => 200,
                 'start' => '+20 days',
-                'end' => '+20 days +5 hours'
+                'end' => '+20 days +5 hours',
+                'categories' => ['Art']
             ],
             [
                 'title' => 'Cours de Cuisine Italienne',
@@ -110,11 +105,12 @@ class AppFixtures extends Fixture
                 'image' => 'https://example.com/images/cuisine.jpg',
                 'capacity' => 20,
                 'start' => '+25 days',
-                'end' => '+25 days +3 hours'
+                'end' => '+25 days +3 hours',
+                'categories' => ['Cuisine']
             ],
         ];
 
-        foreach ($eventsData as $index => $data) {
+        foreach ($eventsData as $data) {
             $event = new Event();
             $event->setTitle($data['title']);
             $event->setDescription($data['description']);
@@ -123,9 +119,14 @@ class AppFixtures extends Fixture
             $event->setStartDatetime(new \DateTime($data['start']));
             $event->setEndDatetime(new \DateTime($data['end']));
 
-            // si plus tard tu ajoutes des relations:
-            // $event->setCategory($categories[$index % count($categories)]);
-            // $event->setPremise($premises[$index % count($premises)]);
+            // Ajout des catégories
+            foreach ($data['categories'] as $categoryName) {
+                foreach ($categories as $category) {
+                    if ($category->getName() === $categoryName) {
+                        $event->addCategory($category);
+                    }
+                }
+            }
 
             $manager->persist($event);
         }
