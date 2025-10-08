@@ -64,6 +64,7 @@ final class EventController extends AbstractController
      * @param SerializerInterface $serializer
      * @return JsonResponse
      */
+    #[IsGranted('ROLE_USER', message: "Vous devez être connecté pour accéder au détail de l'événements.")]
     #[Route('/api/events/{id}', name: 'api_detail_event', methods: ['GET'])]
     public function getDetailEvent(Event $event, SerializerInterface $serializer): JsonResponse {
         $jsonEvent = $serializer->serialize($event, 'json', ['groups' => 'getEventDetails']);

@@ -26,17 +26,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getUsers'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
     #[Assert\NotBlank(message: "L'email est obligatoire.")]
     #[Assert\Email(message: "L'email {{ value }} n'est pas valide.")]
+    #[Groups(['getUsers'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(['getUsers'])]
     private array $roles = [];
 
     /**
@@ -50,13 +53,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: "Le nom de famille est obligatoire.")]
     #[Assert\Length(min:2, max: 100, minMessage: "Le nom de famille doit faire au moins {{ limit }} caractères", maxMessage: "Le nom de famille ne peut pas faire plus de {{ limit }} caractères")]
-    #[Groups(['getEventDetails'])]
+    #[Groups(['getEventDetails', 'getUsers'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: "Le prenom est obligatoire.")]
     #[Assert\Length(min:2, max: 100, minMessage: "Le prenom doit faire au moins {{ limit }} caractères", maxMessage: "Le prenom ne peut pas faire plus de {{ limit }} caractères")]
-    #[Groups(['getEventDetails'])]
+    #[Groups(['getEventDetails', 'getUsers'])]
     private ?string $firstName = null;
 
     #[ORM\Column]

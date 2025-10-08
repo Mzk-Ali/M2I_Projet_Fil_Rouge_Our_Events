@@ -11,10 +11,32 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/api/users')]
 final class UserController extends AbstractController
 {
+
+    /**
+     * Cette méthode permet de récupérer l'ensemble des utilisateurs.
+     *
+     * @param UserRepository $userRepository
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour récupérer la liste des utilisateurs')]
+    #[Route('', name: 'api_get_users', methods: ['GET'])]
+    public function getUserList(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    {
+        $users = $userRepository->findAll();
+        $jsonUserList = $serializer->serialize($users , 'json', ['groups' => 'getUsers']);
+
+        return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
+    }
+
+
+
+
     /**
      * Cette méthode permet d'ajouter ou de retirer le rôle Admin d'un utilisateur'
      *
