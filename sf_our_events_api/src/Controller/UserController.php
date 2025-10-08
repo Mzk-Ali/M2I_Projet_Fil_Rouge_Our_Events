@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\EventRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -54,5 +57,74 @@ final class UserController extends AbstractController
                 'roles' => $user->getRoles(),
             ],
         ]);
+    }
+
+
+    /**
+     * Cette méthode permet à un admin d'inscrire un utilisateur à un évenement'
+     *
+     * @param int $userId
+     * @param int $eventId
+     * @param EventRepository $eventRepository
+     * @param UserRepository $userRepository
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
+    #[IsGranted('ROLE_ADMIN', message: "Vous devez avoir le rôle Admin pour inscrire un utilisateur à un evenement")]
+    #[Route('/{userId}/register/{eventId}', name: 'api_admin_register_user_to_event', methods: ['POST'])]
+    public function adminRegisterUserToEvent(int $userId, int $eventId, EventRepository $eventRepository, UserRepository $userRepository, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $userRepository->find($userId);
+        $event = $eventRepository->find($eventId);
+
+        $response = match (true) {
+            !$user => new JsonResponse(['message' => 'Utilisateur introuvable'], Response::HTTP_NOT_FOUND),
+            !$event => new JsonResponse(['message' => 'Evénement introuvable'], Response::HTTP_NOT_FOUND),
+            $user->getRegisteredEvents()->contains($event) => new JsonResponse(['message' => 'Utilisateur déjà inscrit'], Response::HTTP_CONFLICT),
+            default => null
+        };
+
+        if ($response) {
+            return $response;
+        }
+
+        $user->addRegisteredEvent($event);
+        $em->flush();
+
+        return new JsonResponse(['message' => "Inscription de l'utilisateur à l'évenement réussie"], Response::HTTP_OK);
+    }
+
+    /**
+     * Cette méthode permet à un admin de désinscrire un utilisateur à un évenement'
+     *
+     * @param int $userId
+     * @param int $eventId
+     * @param EventRepository $eventRepository
+     * @param UserRepository $userRepository
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
+    #[IsGranted('ROLE_ADMIN', message: "Vous devez avoir le rôle Admin pour désinscrire un utilisateur à un evenement")]
+    #[Route('/{userId}/unregister/{eventId}', name: 'api_admin_unregister_user_to_event', methods: ['POST'])]
+    public function adminUnregisterUserToEvent(int $userId, int $eventId, EventRepository $eventRepository, UserRepository $userRepository, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $userRepository->find($userId);
+        $event = $eventRepository->find($eventId);
+
+        $response = match (true) {
+            !$user => new JsonResponse(['message' => 'Utilisateur introuvable'], Response::HTTP_NOT_FOUND),
+            !$event => new JsonResponse(['message' => 'Evénement introuvable'], Response::HTTP_NOT_FOUND),
+            !$user->getRegisteredEvents()->contains($event) => new JsonResponse(['message' => 'Utilisateur non inscrit'], Response::HTTP_BAD_REQUEST),
+            default => null
+        };
+
+        if ($response) {
+            return $response;
+        }
+
+        $user->removeRegisteredEvent($event);
+        $em->flush();
+
+        return new JsonResponse(['message' => "Désinscription de l'utilisateur réussie"], Response::HTTP_OK);
     }
 }

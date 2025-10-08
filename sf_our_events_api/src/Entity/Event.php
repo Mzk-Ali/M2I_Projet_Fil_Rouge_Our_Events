@@ -76,9 +76,16 @@ class Event
     #[ORM\JoinColumn(nullable: false)]
     private ?User $manager = null;
 
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'registeredEvents')]
+    private Collection $registeredUsers;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
+        $this->registeredUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -202,6 +209,33 @@ class Event
     public function setManager(?User $manager): static
     {
         $this->manager = $manager;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getRegisteredUsers(): Collection
+    {
+        return $this->registeredUsers;
+    }
+
+    public function addRegisteredUser(User $registeredUser): static
+    {
+        if (!$this->registeredUsers->contains($registeredUser)) {
+            $this->registeredUsers->add($registeredUser);
+            $registeredUser->addRegisteredEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRegisteredUser(User $registeredUser): static
+    {
+        if ($this->registeredUsers->removeElement($registeredUser)) {
+            $registeredUser->removeRegisteredEvent($this);
+        }
 
         return $this;
     }

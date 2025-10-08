@@ -19,6 +19,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->roles = ['ROLE_USER'];
         $this->events = new ArrayCollection();
+        $this->registeredEvents = new ArrayCollection();
     }
     
     #[ORM\Id]
@@ -63,6 +64,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'manager')]
     private Collection $events;
+
+    /**
+     * @var Collection<int, Event>
+     */
+    #[ORM\ManyToMany(targetEntity: Event::class, inversedBy: 'registeredUsers')]
+    private Collection $registeredEvents;
 
     public function getId(): ?int
     {
@@ -216,6 +223,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $event->setManager(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getRegisteredEvents(): Collection
+    {
+        return $this->registeredEvents;
+    }
+
+    public function addRegisteredEvent(Event $registeredEvent): static
+    {
+        if (!$this->registeredEvents->contains($registeredEvent)) {
+            $this->registeredEvents->add($registeredEvent);
+        }
+
+        return $this;
+    }
+
+    public function removeRegisteredEvent(Event $registeredEvent): static
+    {
+        $this->registeredEvents->removeElement($registeredEvent);
 
         return $this;
     }

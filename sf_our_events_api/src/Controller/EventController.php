@@ -211,4 +211,66 @@ final class EventController extends AbstractController
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
+
+
+    /**
+     * Cette méthode permet à un utilisateur de s'inscrire à un évenement.'
+     *
+     * @param Event $event
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
+    #[IsGranted('ROLE_USER', message: "Vous devez être connecté pour s'inscrire à un evenement")]
+    #[Route('/api/events/{id}/register', name: 'api_register_event', methods: ['POST'])]
+    public function registerMyselfToEvent(Event $event, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+
+        $response = match (true) {
+            !$user => new JsonResponse(['message' => 'Utilisateur introuvable'], Response::HTTP_NOT_FOUND),
+            !$event => new JsonResponse(['message' => 'Evénement introuvable'], Response::HTTP_NOT_FOUND),
+            $user->getRegisteredEvents()->contains($event) => new JsonResponse(['message' => 'Utilisateur déjà inscrit'], Response::HTTP_CONFLICT),
+            default => null
+        };
+
+        if ($response) {
+            return $response;
+        }
+
+        $user->addRegisteredEvent($event);
+        $em->flush();
+
+        return new JsonResponse(['message' => "Inscription à l'évenement réussie"], Response::HTTP_OK);
+    }
+
+
+    /**
+     * Cette méthode permet à un utilisateur de se désinscrire à un évenement.'
+     *
+     * @param Event $event
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
+    #[IsGranted('ROLE_USER', message: "Vous devez être connecté pour s'inscrire à un evenement")]
+    #[Route('/api/events/{id}/unregister', name: 'api_unregister_event', methods: ['POST'])]
+    public function unregisterMyselfToEvent(Event $event, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+
+        $response = match (true) {
+            !$user => new JsonResponse(['message' => 'Utilisateur introuvable'], Response::HTTP_NOT_FOUND),
+            !$event => new JsonResponse(['message' => 'Evénement introuvable'], Response::HTTP_NOT_FOUND),
+            !$user->getRegisteredEvents()->contains($event) => new JsonResponse(['message' => 'Utilisateur non inscrit'], Response::HTTP_BAD_REQUEST),
+            default => null
+        };
+
+        if ($response) {
+            return $response;
+        }
+
+        $user->removeRegisteredEvent($event);
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Désinscription réussie'], Response::HTTP_OK);
+    }
 }
