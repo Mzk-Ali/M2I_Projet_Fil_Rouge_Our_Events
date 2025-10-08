@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -49,11 +50,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: "Le nom de famille est obligatoire.")]
     #[Assert\Length(min:2, max: 100, minMessage: "Le nom de famille doit faire au moins {{ limit }} caractères", maxMessage: "Le nom de famille ne peut pas faire plus de {{ limit }} caractères")]
+    #[Groups(['getEventDetails'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: "Le prenom est obligatoire.")]
     #[Assert\Length(min:2, max: 100, minMessage: "Le prenom doit faire au moins {{ limit }} caractères", maxMessage: "Le prenom ne peut pas faire plus de {{ limit }} caractères")]
+    #[Groups(['getEventDetails'])]
     private ?string $firstName = null;
 
     #[ORM\Column]

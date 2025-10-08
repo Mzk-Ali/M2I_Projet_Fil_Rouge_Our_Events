@@ -17,37 +17,37 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getEvents', 'event:read'])]
+    #[Groups(['getEvents', 'getEventDetails', 'event:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre de l'événement est obligatoire")]
     #[Assert\Length(min:2, max: 255, minMessage: "Le titre de l'événement doit faire au moins {{ limit }} caractères", maxMessage: "Le titre de l'événement ne peut pas faire plus de {{ limit }} caractères")]
-    #[Groups(['getEvents', 'event:read', 'event:write'])]
+    #[Groups(['getEvents', 'getEventDetails', 'event:read', 'event:write'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['getEventDetails', 'event:read', 'event:write'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "L'url de l'image de l'évenement est obligatoire")]
     #[Assert\Url(message: "L'URL de l'image n'est pas valide")]
-    #[Groups(['getEvents', 'event:read', 'event:write'])]
+    #[Groups(['getEvents', 'getEventDetails', 'event:read', 'event:write'])]
     private ?string $image_url = null;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "La capacité est obligatoire")]
     #[Assert\Positive(message: "La capacité doit être un nombre positif")]
     #[Assert\LessThanOrEqual(value: 10000, message: "La capacité ne peut pas dépasser {{ compared_value }} personnes")]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['getEventDetails', 'event:read', 'event:write'])]
     private ?int $capacity = null;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "La date de début de l'évenement est obligatoire")]
     #[Assert\Type(\DateTimeInterface::class, message: "La date de début de l'évenement doit être une date valide")]
     #[Assert\GreaterThan("today", message: "La date de début doit être dans le futur")]
-    #[Groups(['getEvents', 'event:read', 'event:write'])]
+    #[Groups(['getEvents', 'getEventDetails', 'event:read', 'event:write'])]
     private ?\DateTime $start_datetime = null;
 
     #[ORM\Column]
@@ -57,23 +57,24 @@ class Event
         "this.getEndDatetime() > this.getStartDatetime()",
         message: "La date de fin doit être postérieure à la date de début"
     )]
-    #[Groups(['getEvents', 'event:read', 'event:write'])]
+    #[Groups(['getEvents', 'getEventDetails', 'event:read', 'event:write'])]
     private ?\DateTime $end_datetime = null;
 
     /**
      * @var Collection<int, Category>
      */
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'events')]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['getEventDetails', 'event:read', 'event:write'])]
     private Collection $categories;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['getEventDetails', 'event:read', 'event:write'])]
     private ?Premise $premise = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getEventDetails'])]
     private ?User $manager = null;
 
     /**

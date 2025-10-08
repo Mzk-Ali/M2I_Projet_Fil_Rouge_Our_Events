@@ -58,6 +58,20 @@ final class EventController extends AbstractController
 
 
     /**
+     * Cette méthode permet de récupérer un Event en particulier en fonction de son id.
+     *
+     * @param Event $event
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
+    #[Route('/api/events/{id}', name: 'api_detail_event', methods: ['GET'])]
+    public function getDetailEvent(Event $event, SerializerInterface $serializer): JsonResponse {
+        $jsonEvent = $serializer->serialize($event, 'json', ['groups' => 'getEventDetails']);
+        return new JsonResponse($jsonEvent, Response::HTTP_OK, [], true);
+    }
+
+
+    /**
      * Cette méthode permet d'insérer un nouveau évenement .
      * Exemple de données :
      * {

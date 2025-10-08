@@ -22,7 +22,7 @@ class Category
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: "Le nom de la Catégorie est obligatoire")]
     #[Assert\Length(min:2, max: 100, minMessage: "Le nom de la Catégorie doit faire au moins {{ limit }} caractères", maxMessage: "Le nom de la Catégorie ne peut pas faire plus de {{ limit }} caractères")]
-    #[Groups(['event:read'])]
+    #[Groups(['getEventDetails'])]
     private ?string $name = null;
 
     /**
