@@ -42,11 +42,16 @@ final class EventController extends AbstractController
     {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
+        $category = $request->get('category');
+        $city = $request->get('city');
 
-        $result = $eventRepository->findAllWithPagination($page, $limit);
+        $categoryId = !empty($category) ? (int) $category : null;
+        $city = !empty($city) ? $city : null;
+
+        $result = $eventRepository->findAllWithPagination($page, $limit, $categoryId, $city);
         $events = $result['data'];
         // $total  = $result['total'];
-        $jsonEventList = $serializer->serialize($events , 'json', ['groups' => 'event:read']);
+        $jsonEventList = $serializer->serialize($events , 'json', ['groups' => 'getEvents']);
 
         return new JsonResponse($jsonEventList, Response::HTTP_OK, [], true);
     }

@@ -17,14 +17,28 @@ class EventRepository extends ServiceEntityRepository
         parent::__construct($registry, Event::class);
     }
 
-    public function findAllWithPagination(int $page = 1, int $limit = 3): array
+    public function findAllWithPagination(int $page = 1, int $limit = 3, ?int $categoryId  = null, ?string $city = null): array
     {
         $firstResult = max(0, ($page - 1) * $limit);
 
         $qb = $this->createQueryBuilder('e')
             ->leftJoin('e.categories', 'c')
             ->addSelect('c')
+            ->leftJoin('e.premise', 'p')
+            ->addSelect('p')
             ->orderBy('e.id', 'ASC');
+
+        // Filtrage par Catégorie via ID
+        if (!empty($categoryId)) {
+            $qb->andWhere(':categoryId MEMBER OF e.categories')
+            ->setParameter('categoryId', $categoryId);
+        }
+
+        // Filtrage par Ville via city
+        if (!empty($city)) {
+            $qb->andWhere('p.city = :city')
+            ->setParameter('city', $city);
+        }
 
         $query = $qb->getQuery()
             ->setFirstResult($firstResult)
@@ -45,12 +59,6 @@ class EventRepository extends ServiceEntityRepository
             'data'  => $events,
             'total' => $total,
         ];
-        // $qb = $this->createQueryBuilder('e')
-        //     ->leftJoin('e.categories', 'c')
-        //     ->addSelect('c')
-        //     ->setFirstResult(($page - 1) * $limit)
-        //     ->setMaxResults($limit);
-        // return $qb->getQuery()->getResult();
     }
 
     //    /**

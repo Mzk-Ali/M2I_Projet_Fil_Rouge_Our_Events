@@ -17,13 +17,13 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['event:read'])]
+    #[Groups(['getEvents', 'event:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre de l'événement est obligatoire")]
     #[Assert\Length(min:2, max: 255, minMessage: "Le titre de l'événement doit faire au moins {{ limit }} caractères", maxMessage: "Le titre de l'événement ne peut pas faire plus de {{ limit }} caractères")]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['getEvents', 'event:read', 'event:write'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -33,7 +33,7 @@ class Event
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "L'url de l'image de l'évenement est obligatoire")]
     #[Assert\Url(message: "L'URL de l'image n'est pas valide")]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['getEvents', 'event:read', 'event:write'])]
     private ?string $image_url = null;
 
     #[ORM\Column]
@@ -47,7 +47,7 @@ class Event
     #[Assert\NotBlank(message: "La date de début de l'évenement est obligatoire")]
     #[Assert\Type(\DateTimeInterface::class, message: "La date de début de l'évenement doit être une date valide")]
     #[Assert\GreaterThan("today", message: "La date de début doit être dans le futur")]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['getEvents', 'event:read', 'event:write'])]
     private ?\DateTime $start_datetime = null;
 
     #[ORM\Column]
@@ -57,7 +57,7 @@ class Event
         "this.getEndDatetime() > this.getStartDatetime()",
         message: "La date de fin doit être postérieure à la date de début"
     )]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['getEvents', 'event:read', 'event:write'])]
     private ?\DateTime $end_datetime = null;
 
     /**
