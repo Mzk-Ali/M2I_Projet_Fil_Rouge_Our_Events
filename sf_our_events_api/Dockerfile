@@ -24,6 +24,6 @@ RUN apt-get update && \
 
 COPY php.ini /usr/local/etc/php/php.ini
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+# COPY entrypoint.sh /entrypoint.sh
+# RUN chmod +x /entrypoint.sh
+# ENTRYPOINT ["/entrypoint.sh"]
