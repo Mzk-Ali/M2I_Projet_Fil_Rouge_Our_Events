@@ -50,7 +50,9 @@ services:
       - mysql
 
   next:
-    build: ./next_our_events_front
+    build: 
+      context: ./next_our_events_front
+      dockerfile: Dockerfile.dev
     container_name: next_front
     ports:
       - "3000:3000"
